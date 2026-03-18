@@ -1,0 +1,162 @@
+.hero {
+  width: 100%;
+  padding: 80px 5%;
+  background: linear-gradient(135deg, #f0eeff 0%, #ffffff 60%);
+}
+
+.hero h1 {
+  font-size: 42px;
+  font-weight: 700;
+  max-width: 520px;
+  line-height: 1.2;
+}
+
+.hero p {
+  font-size: 16px;
+  color: #666;
+  margin: 16px 0 32px;
+}
+
+.featured-header {
+  padding: 48px 5% 24px;
+}
+
+.featured-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.featured-body {
+  padding: 0 5% 48px;
+}
+
+.products-page {
+  padding: 40px 5%;
+}
+
+.products-controls {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.products-search {
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.category-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cart-page h1 {
+  margin-bottom: 24px;
+}
+
+.cart-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.cart-items-list {
+  display: grid;
+  gap: 12px;
+}
+
+.cart-row {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 64px 1fr auto auto auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.cart-row-image {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #f4f4f5;
+}
+
+.cart-row-meta h3 {
+  font-size: 15px;
+}
+
+.cart-row-meta p {
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.cart-qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cart-qty-controls button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cart-line-total {
+  font-weight: 600;
+}
+
+.cart-remove {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+}
+
+.order-summary {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  height: fit-content;
+  display: grid;
+  gap: 12px;
+}
+
+.order-total {
+  color: #6c63ff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.order-actions {
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 30px;
+  }
+
+  .cart-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-row {
+    grid-template-columns: 64px 1fr;
+  }
+
+  .cart-qty-controls,
+  .cart-line-total,
+  .cart-remove {
+    grid-column: 2;
+  }
+}

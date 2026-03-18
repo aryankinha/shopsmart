@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import userEvent from '@testing-library/user-event'
-import App from './App'
-import { server } from './mocks/server'
+import App from '../App'
+import { server } from '../mocks/server'
 import { http, HttpResponse } from 'msw'
 
 // ---------------------------------------------------------------------------

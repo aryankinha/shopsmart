@@ -1,8 +1,8 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import userEvent from '@testing-library/user-event'
-import Dashboard from './Dashboard'
-import { server } from './mocks/server'
+import Dashboard from '../pages/ProductsPage'
+import { server } from '../mocks/server'
 import { http, HttpResponse } from 'msw'
 
 // ---------------------------------------------------------------------------
@@ -269,7 +269,7 @@ describe('Integration: App + Dashboard', () => {
   let AppModule
 
   beforeAll(async () => {
-    AppModule = await import('./App')
+    AppModule = await import('../App')
   })
 
   it('renders navbar, products, and footer status together', async () => {
