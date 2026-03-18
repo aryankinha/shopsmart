@@ -3,6 +3,15 @@ import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 
 export default [
+  {
+    ignores: [
+      "dist/**",
+      "coverage/**",
+      "playwright-report/**",
+      "test-results/**",
+      "node_modules/**"
+    ]
+  },
   js.configs.recommended,
   {
     files: ["**/*.js", "**/*.jsx"],
@@ -19,6 +28,7 @@ export default [
       globals: {
         window: true,
         document: true,
+        alert: true,
         console: true,
         fetch: true,
         setTimeout: true,
@@ -39,6 +49,7 @@ export default [
     },
     rules: {
       "react/react-in-jsx-scope": "off",
+      "react/jsx-uses-vars": "error",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
       "no-unused-vars": "warn",

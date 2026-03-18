@@ -1,89 +1,75 @@
 import { test, expect } from '@playwright/test'
 
 // ---------------------------------------------------------------------------
-// E2E Tests — ShopSmart Dashboard
+// E2E Tests — ShopSmart Storefront
 // ---------------------------------------------------------------------------
 
-test.describe('ShopSmart Dashboard', () => {
+test.describe('ShopSmart Storefront', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
   })
 
   // ---- Page Load ----------------------------------------------------------
   test('page loads with ShopSmart branding', async ({ page }) => {
-    await expect(page.locator('.navbar-brand h1')).toHaveText('ShopSmart')
+    await expect(page.locator('.navbar-logo')).toHaveText('ShopSmart')
   })
 
-  test('navbar contains all navigation links', async ({ page }) => {
+  test('navbar contains home/products/cart links', async ({ page }) => {
+    await expect(page.getByRole('link', { name: 'Home' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Products' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Categories' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Cart' })).toBeVisible()
-    await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible()
+    await expect(page.locator('.cart-link')).toBeVisible()
+  })
+
+  // ---- Home ---------------------------------------------------------------
+  test('home page shows hero and featured products', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: /Discover Products You'll Love/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Featured Products' })).toBeVisible()
+    await expect(page.locator('.product-card').first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('.product-card')).toHaveCount(4)
+  })
+
+  test('shop now button navigates to products page', async ({ page }) => {
+    await page.getByRole('button', { name: 'Shop Now' }).click()
+    await expect(page.getByPlaceholder('Search products...')).toBeVisible()
   })
 
   // ---- Products -----------------------------------------------------------
-  test('products load and display on the dashboard', async ({ page }) => {
-    await expect(page.locator('.product-card').first()).toBeVisible({ timeout: 10_000 })
+  test('products page shows all products and search', async ({ page }) => {
+    await page.getByRole('link', { name: 'Products' }).click()
+    await expect(page.getByPlaceholder('Search products...')).toBeVisible()
 
     const cards = page.locator('.product-card')
     await expect(cards).toHaveCount(6) // server returns 6 products
   })
 
-  test('product cards show name, price, and stock status', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Wireless Headphones' })).toBeVisible({ timeout: 10_000 })
-    await expect(page.locator('.price').first()).toBeVisible()
-    await expect(page.locator('.stock-status.in-stock').first()).toBeVisible()
-  })
+  test('products page supports add to cart and out-of-stock state', async ({ page }) => {
+    await page.getByRole('link', { name: 'Products' }).click()
 
-  test('out-of-stock product shows unavailable button', async ({ page }) => {
-    // Screen Protector is out of stock
-    const card = page.locator('.product-card', { hasText: 'Screen Protector' })
-    await expect(card).toBeVisible({ timeout: 10_000 })
-    await expect(card.locator('.stock-status.out-of-stock')).toBeVisible()
+    const addButtons = page.getByRole('button', { name: 'Add to Cart' })
+    await expect(addButtons.first()).toBeVisible()
+    await expect(addButtons.first()).toBeEnabled()
 
-    const btn = card.getByRole('button', { name: /unavailable/i })
-    await expect(btn).toBeVisible()
-    await expect(btn).toBeDisabled()
-  })
-
-  test('in-stock product has enabled Add to Cart button', async ({ page }) => {
-    const card = page.locator('.product-card', { hasText: 'Wireless Headphones' })
-    await expect(card).toBeVisible({ timeout: 10_000 })
-    const btn = card.getByRole('button', { name: /add to cart/i })
-    await expect(btn).toBeVisible()
-    await expect(btn).toBeEnabled()
-  })
-
-  test('product count badge matches number of products', async ({ page }) => {
-    await expect(page.locator('.product-count')).toContainText('6 Products Available', {
-      timeout: 10_000,
-    })
-  })
-
-  // ---- Backend Status (Footer) -------------------------------------------
-  test('footer shows backend online status', async ({ page }) => {
-    await expect(page.locator('.status-indicator.status-ok')).toBeVisible({ timeout: 10_000 })
-    await expect(page.locator('.status-message')).toContainText('ShopSmart Backend is running')
+    const outOfStock = page.getByRole('button', { name: 'Out of Stock' })
+    await expect(outOfStock.first()).toBeVisible()
+    await expect(outOfStock.first()).toBeDisabled()
   })
 
   test('footer shows copyright', async ({ page }) => {
-    await expect(page.locator('.footer-info')).toContainText('2026 ShopSmart')
+    await expect(page.locator('footer')).toContainText('© 2025 ShopSmart')
   })
 
   // ---- Navigation ---------------------------------------------------------
-  test('user can click Sign In button', async ({ page }) => {
-    const btn = page.getByRole('button', { name: /sign in/i })
-    await btn.click()
-    // No navigation yet, just verify it doesn't crash
-    await expect(btn).toBeVisible()
+  test('cart icon opens cart drawer', async ({ page }) => {
+    await page.locator('.cart-link').click()
+    await expect(page.getByRole('heading', { name: 'Your Cart' })).toBeVisible()
+    await expect(page.getByText('Your cart is empty.')).toBeVisible()
   })
 
-  test('user can click navigation links', async ({ page }) => {
-    await page.getByRole('link', { name: 'Categories' }).click()
-    await expect(page.getByRole('link', { name: 'Categories' })).toBeVisible()
+  test('cart route renders cart page', async ({ page }) => {
+    await page.goto('/cart')
+    await expect(page.getByRole('heading', { name: 'Your Cart' })).toBeVisible()
 
-    await page.getByRole('link', { name: 'Cart' }).click()
-    await expect(page.getByRole('link', { name: 'Cart' })).toBeVisible()
+    await expect(page.getByText('Your cart is empty.')).toBeVisible()
   })
 
   // ---- Visual / Layout ----------------------------------------------------
