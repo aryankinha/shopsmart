@@ -1,143 +1,57 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import userEvent from '@testing-library/user-event'
-import App from '../App'
-import { server } from '../mocks/server'
-import { http, HttpResponse } from 'msw'
+import { render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import App from '../App';
 
-// ---------------------------------------------------------------------------
-// Unit Tests — App Component
-// ---------------------------------------------------------------------------
-describe('App Component', () => {
-  // ---- Rendering ----------------------------------------------------------
-  describe('Rendering', () => {
-    it('renders navbar with ShopSmart branding', () => {
-      render(<App />)
-      expect(screen.getAllByText(/ShopSmart/i).length).toBeGreaterThan(0)
-    })
+describe('App', () => {
+  beforeEach(() => {
+    if (typeof window !== 'undefined' && window.localStorage?.removeItem) {
+      window.localStorage.removeItem('shopsmart_cart');
+    }
+    window.history.pushState({}, '', '/');
+  });
 
-    it('renders navigation links', () => {
-      render(<App />)
-      expect(screen.getByText('Products')).toBeInTheDocument()
-      expect(screen.getByText('Categories')).toBeInTheDocument()
-      expect(screen.getByText('Cart')).toBeInTheDocument()
-    })
+  it('renders navbar, home hero, and footer', () => {
+    render(<App />);
 
-    it('renders Sign In button', () => {
-      render(<App />)
-      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
-    })
+    expect(screen.getByText('ShopSmart')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /Discover Products You'll Love/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Built with React & Node\.js/i),
+    ).toBeInTheDocument();
+  });
 
-    it('renders footer with copyright', () => {
-      render(<App />)
-      expect(screen.getByText(/© 2026 ShopSmart/i)).toBeInTheDocument()
-    })
+  it('navigates to products page from navbar', async () => {
+    const user = userEvent.setup();
+    render(<App />);
 
-    it('renders Dashboard inside main content', async () => {
-      render(<App />)
-      await waitFor(() => {
-        expect(screen.getByText(/product dashboard/i)).toBeInTheDocument()
-      })
-    })
-  })
+    await user.click(screen.getByRole('link', { name: 'Products' }));
 
-  // ---- Semantic HTML & Layout ---------------------------------------------
-  describe('Layout Structure', () => {
-    it('contains nav, main, and footer semantic elements', () => {
-      const { container } = render(<App />)
-      expect(container.querySelector('nav')).toBeInTheDocument()
-      expect(container.querySelector('main')).toBeInTheDocument()
-      expect(container.querySelector('footer')).toBeInTheDocument()
-    })
+    expect(
+      screen.getByPlaceholderText('Search products...'),
+    ).toBeInTheDocument();
+  });
 
-    it('renders children in correct order: navbar → main → footer', () => {
-      const { container } = render(<App />)
-      const children = Array.from(container.querySelector('.app').children)
-      expect(children[0]).toHaveClass('navbar')
-      expect(children[1]).toHaveClass('main-content')
-      expect(children[2]).toHaveClass('footer')
-    })
-  })
+  it('opens cart drawer from cart icon click', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
 
-  // ---- Navigation ---------------------------------------------------------
-  describe('Navigation', () => {
-    it('Products link has active class', () => {
-      render(<App />)
-      expect(screen.getByText('Products')).toHaveClass('active')
-    })
+    const cartLink = container.querySelector('.cart-link');
+    expect(cartLink).toBeInTheDocument();
 
-    it('all nav links point to "#"', () => {
-      render(<App />)
-      ;['Products', 'Categories', 'Cart'].forEach((label) => {
-        expect(screen.getByText(label)).toHaveAttribute('href', '#')
-      })
-    })
+    await user.click(cartLink);
 
-    it('nav links are clickable', async () => {
-      const user = userEvent.setup()
-      render(<App />)
-      await user.click(screen.getByText('Categories'))
-      expect(screen.getByText('Categories')).toBeInTheDocument()
-    })
+    expect(screen.getByRole('heading', { name: 'Your Cart' })).toBeInTheDocument();
+    expect(screen.getByText('Your cart is empty.')).toBeInTheDocument();
+  });
 
-    it('Sign In button is clickable', async () => {
-      const user = userEvent.setup()
-      render(<App />)
-      await user.click(screen.getByRole('button', { name: /sign in/i }))
-      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
-    })
-  })
+  it('loads featured products on home page', async () => {
+    render(<App />);
 
-  // ---- Backend Status (Footer) -------------------------------------------
-  describe('Backend Status in Footer', () => {
-    it('shows "Connecting..." before health response arrives', () => {
-      // Delay the response so we can observe the loading state
-      server.use(
-        http.get('/api/health', async () => {
-          await new Promise((r) => setTimeout(r, 5000))
-          return HttpResponse.json({ status: 'ok', message: 'ok' })
-        }),
-      )
-      render(<App />)
-      expect(screen.getByText(/connecting/i)).toBeInTheDocument()
-    })
-
-    it('shows "Online" after successful health check', async () => {
-      render(<App />)
-      await waitFor(() => {
-        expect(screen.getByText(/online/i)).toBeInTheDocument()
-      })
-    })
-
-    it('shows backend message after health check', async () => {
-      render(<App />)
-      await waitFor(() => {
-        expect(screen.getByText(/ShopSmart Backend is running/i)).toBeInTheDocument()
-      })
-    })
-
-    it('applies status-ok class on healthy response', async () => {
-      render(<App />)
-      await waitFor(() => {
-        expect(screen.getByText(/online/i)).toHaveClass('status-ok')
-      })
-    })
-
-    it('keeps app functional when health check fails', async () => {
-      server.use(
-        http.get('/api/health', () => {
-          return HttpResponse.error()
-        }),
-      )
-      render(<App />)
-      // UI should still be rendered
-      expect(screen.getByText('Products')).toBeInTheDocument()
-      expect(screen.getByText(/Backend Status/i)).toBeInTheDocument()
-    })
-
-    it('shows "Backend Status:" label', () => {
-      render(<App />)
-      expect(screen.getByText(/backend status:/i)).toBeInTheDocument()
-    })
-  })
-})
+    await waitFor(() => {
+      expect(screen.getByText('Wireless Headphones')).toBeInTheDocument();
+    });
+  });
+});

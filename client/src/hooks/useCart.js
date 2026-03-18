@@ -1,13 +1,21 @@
 import { useState, useEffect } from 'react';
 
+const storage =
+  typeof window !== 'undefined' &&
+  window.localStorage &&
+  typeof window.localStorage.getItem === 'function' &&
+  typeof window.localStorage.setItem === 'function'
+    ? window.localStorage
+    : null;
+
 const useCart = () => {
   const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem('shopsmart_cart');
+    const saved = storage?.getItem('shopsmart_cart');
     return saved ? JSON.parse(saved) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem('shopsmart_cart', JSON.stringify(cart));
+    storage?.setItem('shopsmart_cart', JSON.stringify(cart));
   }, [cart]);
 
   const addToCart = (product) => {
