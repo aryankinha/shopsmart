@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 const Product = require('./models/Product');
 
 const app = express();
@@ -137,9 +139,20 @@ app.delete('/api/products/:id', async (req, res) => {
   }
 });
 
-// Root Route (optional, just to show something)
-app.get('/', (req, res) => {
-  res.send('ShopSmart Backend Service');
-});
+const clientDistPath = path.resolve(__dirname, '../../client/dist');
+
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+
+  // Serve SPA routes from the built frontend (excluding API routes)
+  app.get(/^\/(?!api).*/, (req, res) => {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+} else {
+  // Keep a simple root response when frontend is not built yet
+  app.get('/', (req, res) => {
+    res.send('ShopSmart Backend Service');
+  });
+}
 
 module.exports = app;
