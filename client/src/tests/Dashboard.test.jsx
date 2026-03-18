@@ -80,7 +80,7 @@ describe('ProductsPage', () => {
 
   it('shows empty state when products list is empty', async () => {
     server.use(
-      http.get('http://localhost:4000/api/products', () =>
+      http.get('*/api/products', () =>
         HttpResponse.json({ success: true, data: [], count: 0 }),
       ),
     );

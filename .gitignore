@@ -24,3 +24,8 @@ npm-debug.log*
 
 # OS
 Thumbs.db
+
+# Local AI/session context notes
+SESSION_CONTEXT*.md
+AI_CONTEXT*.md
+*.session-context.md

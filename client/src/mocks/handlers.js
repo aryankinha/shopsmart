@@ -32,7 +32,7 @@ const products = [
 
 export const handlers = [
   // Health check
-  http.get('http://localhost:4000/api/health', () => {
+  http.get('*/api/health', () => {
     return HttpResponse.json({
       status: 'ok',
       message: 'ShopSmart Backend is running',
@@ -41,7 +41,7 @@ export const handlers = [
   }),
 
   // All products
-  http.get('http://localhost:4000/api/products', () => {
+  http.get('*/api/products', () => {
     return HttpResponse.json({
       success: true,
       data: products,
@@ -50,7 +50,7 @@ export const handlers = [
   }),
 
   // Single product by id
-  http.get('http://localhost:4000/api/products/:id', ({ params }) => {
+  http.get('*/api/products/:id', ({ params }) => {
     const product = products.find((p) => p._id === params.id)
     if (product) {
       return HttpResponse.json({ success: true, data: product })
