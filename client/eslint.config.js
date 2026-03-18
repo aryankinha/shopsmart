@@ -5,6 +5,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 export default [
   js.configs.recommended,
   {
+    files: ["**/*.js", "**/*.jsx"],
     plugins: {
       react,
       "react-hooks": reactHooks
@@ -12,7 +13,29 @@ export default [
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
-      globals: { window: true, document: true, console: true }
+      parserOptions: {
+        ecmaFeatures: { jsx: true }
+      },
+      globals: {
+        window: true,
+        document: true,
+        console: true,
+        fetch: true,
+        setTimeout: true,
+        clearTimeout: true,
+        setInterval: true,
+        clearInterval: true,
+        // Vitest globals
+        describe: true,
+        it: true,
+        test: true,
+        expect: true,
+        beforeAll: true,
+        afterAll: true,
+        beforeEach: true,
+        afterEach: true,
+        vi: true
+      }
     },
     rules: {
       "react/react-in-jsx-scope": "off",
@@ -22,5 +45,11 @@ export default [
       "no-undef": "error"
     },
     settings: { react: { version: "detect" } }
+  },
+  {
+    files: ["playwright.config.js", "vite.config.js"],
+    languageOptions: {
+      globals: { process: true }
+    }
   }
 ];
