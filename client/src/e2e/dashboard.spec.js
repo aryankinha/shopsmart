@@ -4,8 +4,91 @@ import { test, expect } from '@playwright/test'
 // E2E Tests — ShopSmart Storefront
 // ---------------------------------------------------------------------------
 
+const products = [
+  {
+    _id: 'p1',
+    name: 'Wireless Headphones',
+    price: 79.99,
+    imageUrl: 'https://picsum.photos/seed/e2e-headphones/400/300',
+    category: 'Audio',
+    stock: 12,
+  },
+  {
+    _id: 'p2',
+    name: 'USB-C Cable',
+    price: 12.99,
+    imageUrl: 'https://picsum.photos/seed/e2e-cable/400/300',
+    category: 'Accessories',
+    stock: 30,
+  },
+  {
+    _id: 'p3',
+    name: 'Phone Case',
+    price: 24.99,
+    imageUrl: 'https://picsum.photos/seed/e2e-phone-case/400/300',
+    category: 'Accessories',
+    stock: 20,
+  },
+  {
+    _id: 'p4',
+    name: 'Screen Protector',
+    price: 9.99,
+    imageUrl: 'https://picsum.photos/seed/e2e-screen/400/300',
+    category: 'Accessories',
+    stock: 0,
+  },
+  {
+    _id: 'p5',
+    name: 'Portable Charger',
+    price: 49.99,
+    imageUrl: 'https://picsum.photos/seed/e2e-charger/400/300',
+    category: 'Power',
+    stock: 18,
+  },
+  {
+    _id: 'p6',
+    name: 'Bluetooth Speaker',
+    price: 59.99,
+    imageUrl: 'https://picsum.photos/seed/e2e-speaker/400/300',
+    category: 'Audio',
+    stock: 15,
+  },
+]
+
 test.describe('ShopSmart Storefront', () => {
   test.beforeEach(async ({ page }) => {
+    await page.route('**/api/products', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: products,
+          count: products.length,
+        }),
+      })
+    })
+
+    await page.route('**/api/products/*', async (route) => {
+      const id = route.request().url().split('/').pop()
+      const product = products.find((item) => item._id === id)
+
+      if (!product) {
+        await route.fulfill({
+          status: 404,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: false, message: 'Product not found' }),
+        })
+        return
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: product }),
+      })
+    })
+
     await page.goto('/')
   })
 
