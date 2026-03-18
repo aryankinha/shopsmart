@@ -1,7 +1,26 @@
 node_modules
 .DS_Store
 .env
+.env.local
+.env.*.local
 dist
 build
 coverage
 .vercel
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
