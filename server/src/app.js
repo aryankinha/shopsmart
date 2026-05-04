@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const Product = require('./models/Product');
@@ -6,6 +7,7 @@ const Product = require('./models/Product');
 const app = express();
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 
 // Health Check Route

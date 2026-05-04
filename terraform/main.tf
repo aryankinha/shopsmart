@@ -157,6 +157,16 @@ resource "aws_ecs_task_definition" "server_task" {
           hostPort      = 5000
         }
       ]
+      environment = [
+        {
+          name  = "MONGODB_URI"
+          value = var.mongodb_uri
+        },
+        {
+          name  = "NODE_ENV"
+          value = "production"
+        }
+      ]
     }
   ])
 }
