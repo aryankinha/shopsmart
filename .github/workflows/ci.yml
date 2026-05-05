@@ -223,10 +223,6 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Update ECS Server Service
+      - name: Update ECS App Service
         run: |
-          aws ecs update-service --cluster shopsmart-cluster --service shopsmart-server-service --force-new-deployment
-
-      - name: Update ECS Client Service
-        run: |
-          aws ecs update-service --cluster shopsmart-cluster --service shopsmart-client-service --force-new-deployment
+          aws ecs update-service --cluster shopsmart-cluster --service shopsmart-app-service --force-new-deployment

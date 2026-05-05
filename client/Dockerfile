@@ -9,26 +9,15 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2: Serve
-FROM node:20-alpine
+# Stage 2: Serve with Nginx
+FROM nginx:alpine
 
-ENV NODE_ENV=production
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Install serve globally (requires root, so do it before switching user)
-RUN npm install -g serve
+# Copy built assets from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Set non-root user
-USER node
+EXPOSE 80
 
-WORKDIR /app
-
-# Copy built assets
-COPY --chown=node:node --from=builder /app/dist ./dist
-
-EXPOSE 3000
-
-# Add healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
-
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["nginx", "-g", "daemon off;"]

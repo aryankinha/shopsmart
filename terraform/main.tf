@@ -86,19 +86,12 @@ data "aws_subnets" "default" {
 # ECS Security Group
 resource "aws_security_group" "ecs_sg" {
   name        = "shopsmart-ecs-sg"
-  description = "Allow inbound traffic for ECS"
+  description = "Allow inbound traffic for ECS app"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 5000
-    to_port     = 5000
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -121,16 +114,27 @@ data "aws_iam_role" "lab_role" {
   name = "LabRole"
 }
 
-# ECS Task Definition (Server)
-resource "aws_ecs_task_definition" "server_task" {
-  family                   = "shopsmart-server-task"
+# ECS Task Definition (Combined Server + Client)
+resource "aws_ecs_task_definition" "app_task" {
+  family                   = "shopsmart-app-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"
-  memory                   = "512"
+  cpu                      = "512"
+  memory                   = "1024"
   execution_role_arn       = data.aws_iam_role.lab_role.arn
 
   container_definitions = jsonencode([
+    {
+      name      = "client"
+      image     = "${aws_ecr_repository.client_repo.repository_url}:latest"
+      essential = true
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+        }
+      ]
+    },
     {
       name      = "server"
       image     = "${aws_ecr_repository.server_repo.repository_url}:latest"
@@ -155,49 +159,11 @@ resource "aws_ecs_task_definition" "server_task" {
   ])
 }
 
-# ECS Task Definition (Client)
-resource "aws_ecs_task_definition" "client_task" {
-  family                   = "shopsmart-client-task"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"
-  memory                   = "512"
-  execution_role_arn       = data.aws_iam_role.lab_role.arn
-
-  container_definitions = jsonencode([
-    {
-      name      = "client"
-      image     = "${aws_ecr_repository.client_repo.repository_url}:latest"
-      essential = true
-      portMappings = [
-        {
-          containerPort = 3000
-          hostPort      = 3000
-        }
-      ]
-    }
-  ])
-}
-
-# ECS Services
-resource "aws_ecs_service" "server_service" {
-  name            = "shopsmart-server-service"
+# ECS Service
+resource "aws_ecs_service" "app_service" {
+  name            = "shopsmart-app-service"
   cluster         = aws_ecs_cluster.app_cluster.id
-  task_definition = aws_ecs_task_definition.server_task.arn
-  launch_type     = "FARGATE"
-  desired_count   = 1
-
-  network_configuration {
-    subnets          = data.aws_subnets.default.ids
-    security_groups  = [aws_security_group.ecs_sg.id]
-    assign_public_ip = true
-  }
-}
-
-resource "aws_ecs_service" "client_service" {
-  name            = "shopsmart-client-service"
-  cluster         = aws_ecs_cluster.app_cluster.id
-  task_definition = aws_ecs_task_definition.client_task.arn
+  task_definition = aws_ecs_task_definition.app_task.arn
   launch_type     = "FARGATE"
   desired_count   = 1
 
